@@ -11,6 +11,40 @@ if (!isset($_POST['addbtn'])){
 
     <form action="index.php?page=4" method="post" enctype="multipart/form-data" class="my-2">
         <div class="form-group">
+             <input type="text" name="category" placeholder="Новая категория" class="mr-2" id="newcategory">
+            <input type="submit" name="addcategory" value="Добавить" class="btn btn-sm btn-warning mr-2">
+            <?php
+            if (isset($_POST['addcategory'])) {
+                $pdo = Tools::connect();
+                $category = new Category(trim($_POST['category']));
+                $category->intoCategory();
+            }
+
+            ?>
+
+
+        <div class="form-group">
+
+                <div name="catid" id="category" class="ml-auto bg-warning mr-3"  style="width: 200px;border-radius: 40px;padding-left: 40px;">
+                    <label for="category" class="text-info">Категории:
+                    <?php
+                    $pdo = Tools::connect();
+                    $ps = $pdo->query("SELECT * FROM categories");//выполнить запрос(вместо препаре и экзекют)
+
+                    while ($row = $ps->fetch()) {
+                        echo "<p class='text-white'>{$row['category']}</p>";
+                    }
+
+                    ?>
+                </div>
+            </label>
+        </div>
+        </div>
+
+
+
+
+        <div class="form-group">
             <label for="category">Категории:
                 <select name="catid" id="category">
                     <?php

@@ -187,7 +187,7 @@ echo "<img src='{$this->imagepath}' alt='image' class='img-fluid' style='max-hei
         echo '<div class="mt-3 text-center ">';
        // $ruser="cort_";
         $ruser='cart_'.$this->id;
-        echo "<button class='btn btn-primary btn-lg w-75 btn-block mb-3 mx-auto' onclick=createCookie('".$ruser."','".$this->id."') style='white-space: normal;'>Добавить в корзину</button>" ;
+        echo "<button class='btn btn-primary btn-lg w-75 btn-block mb-3 mx-auto' data-toggle='modal' data-target='#productAdd' onclick=createCookie('".$ruser."','".$this->id."') style='white-space: normal;'>Добавить в корзину</button>" ;
 
         echo '</div>';
 
@@ -205,7 +205,21 @@ echo "<span class='col-1 ml-3 mt-2'>$this->id</span>";
     echo "<button class='btn btn-danger text-uppercase my-auto' onclick=eraseCookie('".$ruser."') style='max-height: 100px'>удалить</button>";
     echo '</div>';
 }
+static function addCategory(){
+    try {
 
+        $pdo=Tools::connect();
+        $catval=$_POST['addcat'];
+        $ps=$pdo->prepare("insert into categories(category) VALUES (?)");
+
+        $ps->execute($catval);
+
+        echo '<script>location.href=location.href;</script>';
+    }catch (PDOException $e){
+        echo $e->getMessage();
+        return false;
+    }
+}
 function sale(){
     try {
         $pdo=Tools::connect();
@@ -236,5 +250,30 @@ static function SMTP($id_result){
         $mail->Username=MAIL;
         $mail->Password=PASS;
 }
+
+}
+
+class Category {
+    public $id;
+    public $category;
+
+    function __construct($category, $id=0)
+    {
+        $this->id = $id;
+        $this->category = $category;
+    }
+
+    function intoCategory() {
+        try {
+            $pdo = Tools::connect();
+            $ps =$pdo->prepare("INSERT INTO categories(category) VALUES (:category)");
+            $ar =(array)$this;
+            array_shift($ar);
+            $ps->execute($ar);
+        } catch (PDOException $e) {
+            echo $e->getMessage();
+            return false;
+        }
+    }
 
 }
