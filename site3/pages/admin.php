@@ -23,10 +23,10 @@ if (!isset($_POST['addbtn'])){
             ?>
 
 
-        <div class="form-group">
+        <div class="form-group" style="overflow:hidden; height: 200px">
 
-                <div name="catid" id="category" class="ml-auto bg-warning mr-3"  style="width: 200px;border-radius: 40px;padding-left: 40px;">
-                    <label for="category" class="text-info">Категории:
+                <div name="catid" id="category" class="ml-auto bg-warning mr-3"  style="border-radius: 40px;padding-left: 40px;height:200px;width:200px;overflow-y:scroll;">
+                    <label class="text-info" >Категории:
                     <?php
                     $pdo = Tools::connect();
                     $ps = $pdo->query("SELECT * FROM categories");//выполнить запрос(вместо препаре и экзекют)
