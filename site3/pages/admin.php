@@ -23,9 +23,9 @@ if (!isset($_POST['addbtn'])){
             ?>
 
 
-        <div class="form-group" style="overflow:hidden; height: 200px">
+        <div class="form-group" style="overflow:hidden; " >
 
-                <div name="catid" id="category" class="ml-auto bg-warning mr-3"  style="border-radius: 40px;padding-left: 40px;height:200px;width:200px;overflow-y:scroll;">
+                <div name="catid" id="category" class="ml-auto bg-warning mr-3"  style="border-radius: 40px;padding-left: 40px;height:150px;width:200px;overflow-y:scroll;">
                     <label class="text-info" >Категории:
                     <?php
                     $pdo = Tools::connect();
@@ -85,7 +85,7 @@ if (!isset($_POST['addbtn'])){
                 <input type="file" accept="image/*" name="imagepath" id="imagepath">
             </label>
         </div>
-        <input type="submit" class="btn bg-primary mb-3" name="addbtn" value="Добавить товар" >
+        <input type="submit" class="btn btn-warning mb-3" name="addbtn" value="Добавить товар" >
     </form>
 </div>
 <?php

@@ -58,7 +58,33 @@ class Customer {
 
         }
 $this->intoDb();
+     //   $_SESSION['ruser'] = $this->login;
         return true;
+
+    }
+
+    static function login ($login,$pass){
+        if (strlen($login)<3||strlen($login)>32||strlen($pass)>64){
+            echo "<h4 class='text-danger'>Некорректная длинна полей!!</h4>";
+            return false;
+        }
+
+        $pdo=Tools::connect();
+        $ps = $pdo->query("SELECT * FROM customers where login='$login' and pass='$pass'");
+        while($row = $ps->fetch()) {
+            if ($row['login'] == $login && $pass == $row['pass']) {
+                $_SESSION['ruser'] = $login;
+                echo '<script>window.location=document.URL</script>';
+
+                if ($row['roleid'] == 1) {
+                    $_SESSION['radmin'] = $login;
+                    echo '<script>window.location=document.URL</script>';
+                }
+            }
+
+
+        }  echo "<h3 class='text-danger'>Пользователь не найден!</h3>";
+        return false;
 
     }
 
@@ -161,9 +187,12 @@ class Item {
         echo '<div class="col-sm-6 col-md-3  item-card m-3 bg-info text-white box-shadow" style="border-radius: 40px;" id="divItem">';
         //шапка товара
 echo '<div class="m-1 bg-dark">';
-echo "<a href='pages/iteminfo.php?name={$this->id}' target='_blank' class='m-2 float-left text-white'>$this->itemname</a>";
+
+echo "<a href='pages/iteminfo.php?name={$this->id}' target='_blank' class='m-2 float-left text-white' >$this->itemname</a>";
 echo "<span class='mr-2 float-right'>$this->rate</span>";
         echo '</div>';
+
+
         //изображение товара
         echo '<div class="mt-4 item-card__img">';
 echo "<img src='{$this->imagepath}' alt='image' class='img-fluid' style='max-height: 400px'>";
@@ -225,7 +254,7 @@ function sale(){
         $pdo=Tools::connect();
         $upd="update customers set total=total+? where login=?";
         $ps=$pdo->prepare($upd);
-        $login='admin';
+        $login=$_SESSION['ruser'];
         $ps->execute([$this->pricesale,$login]);
         //добавиьт записть в таблицу
         $ins="insert into sales(customername,itemname,pricein,pricesale,datasale) values(?,?,?,?,?)";
@@ -240,15 +269,63 @@ function sale(){
 }
 static function SMTP($id_result){
         require_once ("PHPMailer/PHPMailerAutoload.php");
+        require_once ("private/private_data.php");
         $mail=new PHPMailer;
         //настройка протокола SMTP
         $mail->CharSet="UTF-8";
         $mail->isSMTP();
         $mail->SMTPAuth=true;
         $mail->Host='smtp.gmail.com';
-        $mail->Port=465;
+        $mail->Port=25;
         $mail->Username=MAIL;
         $mail->Password=PASS;
+
+        //от кого
+    $mail->setFrom(MAIL,'SHOP test');
+
+    //кому
+    $mail->addAddress(MAIL,'From site by_noff');
+
+    //тема письма
+
+    $mail->Subject='Новый заказ на сайте Shop by_noff';
+
+    //тело письма
+    $body="<table cellspacing='0' cellpadding='0' border='2' width='800' style='background-color: lavender!important;'>";
+    $arr_items=[];
+
+    $i=0;
+    foreach ($id_result as $id){
+        $item=self::fromDb($id);
+    array_push($arr_items,$item->itemname,$item->pricesale,$item->info);//для csv файла
+        $mail->addEmbeddedImage($item->imagepath,'item'.++$i);
+        $body.="<tr>
+<th>$item->itemname</th>
+<td style='padding-left: 20px;'>$item->pricesale</td>
+<td style='padding-left: 20px;'>$item->info</td>
+<td><img src='cid:item{$i}' alt='item' height='100'></td>
+
+
+                </tr>";
+
+    }
+
+    $body.='</table>';
+    $mail->msgHTML($body);
+    try {
+        $mail->send();
+    } catch (phpmailerException $e) {
+        echo $e->getMessage();
+
+    }
+
+//вызов и создание .csv файла
+    try {
+        $csv=new CSV('private/excel_file.csv');
+        $csv->setCSV($arr_items);
+    }catch (Exception $e){
+        echo $e->getMessage();
+    }
 }
 
 }
@@ -274,6 +351,25 @@ class Category {
             echo $e->getMessage();
             return false;
         }
+    }
+
+}
+
+class CSV {
+    private $csv_file=null;
+    public function __construct($csv_file){
+        $this->csv_file=$csv_file;
+    }
+
+
+
+    function setCSV($arr_item){
+        $file=fopen($this->csv_file,'a+');
+        foreach ($arr_item as $item){
+            fputs($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fputcsv($file,[$item],';');
+        }
+        fclose($file);
     }
 
 }

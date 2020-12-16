@@ -31,7 +31,9 @@ require_once ("pages/classes.php");
 <div class="container-fluid">
     <div class="row">
         <header class="col-12 my-4">
-
+            <?php
+            include_once ("pages/login.php");
+            ?>
         </header>
     </div>
     <div class="row">

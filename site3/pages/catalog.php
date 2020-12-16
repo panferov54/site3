@@ -1,4 +1,4 @@
-<h3>Каталог товаров</h3>
+<h3 class="text-info">Каталог товаров</h3>
 <div id="productAdd" class="modal fade" role="dialog">
     <div class="modal-dialog">
 
@@ -16,6 +16,7 @@
 
     </div>
 </div>
+
 <?php
 //var_dump(Item::getItems());
 echo '<div id="result" class="row justify-content-between" >';
