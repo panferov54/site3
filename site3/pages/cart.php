@@ -7,6 +7,7 @@ foreach ($_COOKIE as $k=>$v){
        $id=substr($k,strpos($k,"_")+1);
        $item=Item::fromDb($id);
         $total+=$item->pricesale;
+        $rezerv=$item->rezerv-1;
         $item->drawItemCart();
     }
 
@@ -14,7 +15,7 @@ foreach ($_COOKIE as $k=>$v){
 }
 echo '<hr>';
 echo "<span class='ml-5 text-primary'>Total Price: $total $</span>";
-echo "<button type='submit' class='btn  btn-primary btn-lg ml-5' name='suborder' onclick=eraseCookie('cart')>Отправить заказ</button>";
+echo "<button type='submit' class='btn  btn-primary btn-lg ml-5' name='suborder' onclick=eraseAllCookie() >Отправить заказ</button>";
 
 echo '</form>';
 
@@ -27,10 +28,17 @@ if(isset($_POST['suborder'])){
            $id= substr($k,strpos($k,"_")+1);
            $item=Item::fromDb($id);
            array_push($id_result,$item->sale());
+
        }
+
     }
 
     Item::SMTP($id_result);
+    echo "<h1 class='text-info'>Заказ успешно оформлен</h1>";
+
+
+
+
 }
 ?>
 <script>
@@ -38,5 +46,28 @@ if(isset($_POST['suborder'])){
         $.removeCookie(ruser,{path:'/'});
     }
 
+    function eraseAllCookie(cart){
+<?php
+        $past = time() - 3600;
+        foreach ( $_COOKIE as $key => $value )
+        {
+            setcookie( $key, $value, $past, '/' );
+        }
 
+        ?>
+
+
+        $.removeCookie(cart,{path:'/'});
+    }
+
+    function deleteAllCookies() {
+        var cookies = document.cookie.split(";");
+
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i];
+            var eqPos = cookie.indexOf("=");
+            var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        }
+    }
 </script>

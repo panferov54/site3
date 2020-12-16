@@ -85,6 +85,11 @@ if (!isset($_POST['addbtn'])){
                 <input type="file" accept="image/*" name="imagepath" id="imagepath">
             </label>
         </div>
+        <div class="form-group">
+            <label for="rezerv">кол-во штук:
+                <input type="text" name="rezerv" id="rezerv">
+            </label>
+        </div>
         <input type="submit" class="btn btn-warning mb-3" name="addbtn" value="Добавить товар" >
     </form>
 </div>
@@ -94,7 +99,7 @@ if (!isset($_POST['addbtn'])){
         $path="images/goods/".$_FILES['imagepath']['name'];
         move_uploaded_file($_FILES['imagepath']['tmp_name'],$path);
     }
-    $item=new Item (trim($_POST['name']),$_POST['catid'],$_POST['pricein'],$_POST['pricesale'],$_POST['info'],$path);
+    $item=new Item (trim($_POST['name']),$_POST['catid'],$_POST['pricein'],$_POST['pricesale'],$_POST['info'],$path,$_POST['rezerv']);
     $item->intoDb();
 }
 

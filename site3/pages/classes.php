@@ -114,9 +114,10 @@ class Item {
     public $info;
     public $rate;
     public $imagepath;
+    public $rezerv;
     public $action;
 
-    function __construct($itemname,$catid,$pricein,$pricesale,$info,$imagepath,$rate=0,$action=0,$id=0)
+    function __construct($itemname,$catid,$pricein,$pricesale,$info,$imagepath,$rezerv,$rate=0,$action=0,$id=0)
     {
         $this->id=$id;
         $this->itemname=$itemname;
@@ -126,6 +127,7 @@ class Item {
         $this->info=$info;
         $this->rate=$rate;
         $this->imagepath=$imagepath;
+        $this->rezerv=$rezerv;
         $this->action=$action;
     }
 
@@ -133,7 +135,7 @@ class Item {
 
         try {
             $pdo=Tools::connect();
-            $ps=$pdo->prepare("insert into items(itemname,catid,pricein,pricesale,info,rate,imagepath,action) values (:itemname,:catid,:pricein,:pricesale,:info,:rate,:imagepath,:action)");
+            $ps=$pdo->prepare("insert into items(itemname,catid,pricein,pricesale,info,rate,imagepath,rezerv,action) values (:itemname,:catid,:pricein,:pricesale,:info,:rate,:imagepath,:rezerv,:action)");
         $ar=(array)$this;
             array_shift($ar);
             $ps->execute($ar);
@@ -148,7 +150,7 @@ class Item {
             $ps=$pdo->prepare("select * from items where id=?");
         $ps->execute([$id]);
         $row=$ps->fetch();
-        $item= new Item($row['itemname'],$row['catid'],$row['pricein'],$row['pricesale'],$row['info'],$row['imagepath'],$row['rate'],$row['action'],$row['id']);
+        $item= new Item($row['itemname'],$row['catid'],$row['pricein'],$row['pricesale'],$row['info'],$row['imagepath'],$row['rezerv'],$row['rate'],$row['action'],$row['id']);
      return $item;
         }catch (PDOException $e){
             echo $e->getMessage();
@@ -170,7 +172,7 @@ class Item {
                $ps->execute([$catid]);
            }
            while ($row=$ps->fetch()){
-               $item= new Item($row['itemname'],$row['catid'],$row['pricein'],$row['pricesale'],$row['info'],$row['imagepath'],$row['rate'],$row['action'],$row['id']);
+               $item= new Item($row['itemname'],$row['catid'],$row['pricein'],$row['pricesale'],$row['info'],$row['imagepath'],$row['rezerv'],$row['rate'],$row['action'],$row['id']);
               //создаем массив экземпляров класса Item
                $items[]=$item;
            }
@@ -212,14 +214,22 @@ echo "<img src='{$this->imagepath}' alt='image' class='img-fluid' style='max-hei
         echo '<br>';
         echo '<p class="float-right">&quot;</p>';
         echo '</div>';
+        echo '<br>';
         //кнопка добавления в корзину
-        echo '<div class="mt-3 text-center ">';
-       // $ruser="cort_";
-        $ruser='cart_'.$this->id;
-        echo "<button class='btn btn-primary btn-lg w-75 btn-block mb-3 mx-auto' data-toggle='modal' data-target='#productAdd' onclick=createCookie('".$ruser."','".$this->id."') style='white-space: normal;'>Добавить в корзину</button>" ;
+        echo '<h6>Остаток товара :</h6>';
+        echo "<span class='lead '> $this->rezerv шт.</span>";
+if($this->rezerv>0) {
 
-        echo '</div>';
 
+    echo '<div class="mt-3 text-center ">';
+    // $ruser="cort_";
+    $ruser = 'cart_' . $this->id;
+    echo "<button class='btn btn-primary btn-lg w-75 btn-block mb-3 mx-auto' data-toggle='modal' data-target='#productAdd' onclick=createCookie('" . $ruser . "','" . $this->id . "') style='white-space: normal;'>Добавить в корзину</button>";
+
+    echo '</div>';
+}else{
+    echo '<h6 class="text-danger">товар закончился</h6>';
+}
 
         echo '</div>';
     }
@@ -252,6 +262,12 @@ static function addCategory(){
 function sale(){
     try {
         $pdo=Tools::connect();
+        //уменьшение кол-ва
+        $one='1';
+        $updRezerv="update items set rezerv=rezerv-1 where id=?";
+        $ps=$pdo->prepare($updRezerv);
+        $ps->execute($this->id);
+
         $upd="update customers set total=total+? where login=?";
         $ps=$pdo->prepare($upd);
         $login=$_SESSION['ruser'];
@@ -295,6 +311,7 @@ static function SMTP($id_result){
     $arr_items=[];
 
     $i=0;
+
     foreach ($id_result as $id){
         $item=self::fromDb($id);
     array_push($arr_items,$item->itemname,$item->pricesale,$item->info);//для csv файла
@@ -313,6 +330,7 @@ static function SMTP($id_result){
     $body.='</table>';
     $mail->msgHTML($body);
     try {
+
         $mail->send();
     } catch (phpmailerException $e) {
         echo $e->getMessage();
