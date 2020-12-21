@@ -238,6 +238,7 @@ function drawItemCart(){
 echo "<span class='col-1 ml-3 mt-2'>$this->id</span>";
     echo "<img src='{$this->imagepath}' alt='image' class='col-1 img-fluid'>";
     echo "<span class='col-3'>$this->itemname</span>";
+    echo "<input name='quantity' id='quantity' placeholder='Сколько шт.' class='item-cart__quantity'>";
     echo "<span class='col-3'>$this->pricesale $</span>";
     $ruser='cart_'.$this->id;
 
@@ -259,14 +260,15 @@ static function addCategory(){
         return false;
     }
 }
-function sale(){
+function sale($quan){
     try {
-        $pdo=Tools::connect();
+
         //уменьшение кол-ва
-        $one='1';
-        $updRezerv="update items set rezerv=rezerv-1 where id=?";
-        $ps=$pdo->prepare($updRezerv);
-        $ps->execute($this->id);
+        $pdo=Tools::connect();
+        $newRezerv = $this->rezerv - $quan;
+        $updQuan="UPDATE items SET rezerv=$newRezerv WHERE id=?";
+        $ps=$pdo->prepare($updQuan);
+        $ps->execute([$this->id]);
 
         $upd="update customers set total=total+? where login=?";
         $ps=$pdo->prepare($upd);

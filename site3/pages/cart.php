@@ -2,13 +2,15 @@
 <?php
 echo '<form action="index.php?page=2" method="post">';
 $total=0;
+
 foreach ($_COOKIE as $k=>$v){
     if(substr($k,0,strpos($k,"_"))==='cart'){
        $id=substr($k,strpos($k,"_")+1);
        $item=Item::fromDb($id);
         $total+=$item->pricesale;
-        $rezerv=$item->rezerv-1;
+    //    $rezerv=$item->rezerv-1;
         $item->drawItemCart();
+
     }
 
 
@@ -22,12 +24,14 @@ echo '</form>';
 
 //обработчик для оформления заказов
 if(isset($_POST['suborder'])){
-    $id_result=[];
+    $id_result = [];
+    $quan = $_POST['quantity'];
+
     foreach ($_COOKIE as $k =>$v){
        if(substr($k,0,strpos($k,"_"))==='cart'){
-           $id= substr($k,strpos($k,"_")+1);
-           $item=Item::fromDb($id);
-           array_push($id_result,$item->sale());
+           $id = substr($k, strpos($k, "_") + 1);
+           $item = Item::fromDb($id);
+           array_push($id_result, $item->sale($quan));
 
        }
 
@@ -46,19 +50,19 @@ if(isset($_POST['suborder'])){
         $.removeCookie(ruser,{path:'/'});
     }
 
-    function eraseAllCookie(cart){
-<?php
-        $past = time() - 3600;
-        foreach ( $_COOKIE as $key => $value )
-        {
-            setcookie( $key, $value, $past, '/' );
-        }
+    function eraseAllCookie() {
 
-        ?>
-
-
-        $.removeCookie(cart,{path:'/'});
+        let allCookies = $.cookie(); // по документации jquery cookie таким образом мы можем получить все куки файлы
+        let allCookiesKeys = Object.keys(allCookies); // allCookies это объект, я получаю все ключи из него в виде массива
+        allCookiesKeys.forEach(function(item)  { // перебираю массив
+            if(item.includes('cart')) { // нахожу все, в которых упоминается cart
+                $.removeCookie(item, {path: '/'}); // удаляю эти элементы
+            }
+        });
     }
+
+
+
 
     function deleteAllCookies() {
         var cookies = document.cookie.split(";");
